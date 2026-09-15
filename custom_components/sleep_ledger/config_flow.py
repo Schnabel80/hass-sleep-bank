@@ -157,11 +157,10 @@ def personal_schema(defaults: dict[str, Any]) -> vol.Schema:
                 selector.SelectSelectorConfig(
                     multiple=True,
                     mode=selector.SelectSelectorMode.LIST,
+                    # Die Wochentagsnamen kommen aus den Übersetzungen unter
+                    # `selector.weekdays.options` und stehen nicht im Code.
                     translation_key="weekdays",
-                    options=[
-                        selector.SelectOptionDict(value=str(index), label=label)
-                        for index, label in enumerate(("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"))
-                    ],
+                    options=[str(index) for index in range(7)],
                 )
             ),
         }

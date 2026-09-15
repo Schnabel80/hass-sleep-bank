@@ -134,7 +134,10 @@ class SleepLedgerCoordinator(DataUpdateCoordinator[LedgerData]):
         try:
             return frozenset(int(day) for day in raw)
         except (TypeError, ValueError):
-            return frozenset(DEFAULT_FREE_DAYS)
+            # Auch der Rückfallweg muss Zahlen liefern: Die Vorgabe liegt als
+            # Zeichenketten vor, weil die Auswahlliste im Config-Flow damit
+            # arbeitet — das Modell rechnet dagegen mit Wochentagsindizes.
+            return frozenset(int(day) for day in DEFAULT_FREE_DAYS)
 
     @property
     def debt_alert_threshold(self) -> float:

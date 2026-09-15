@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
 from conftest import BASE_CONFIG, SLEEP_ENTITY
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
@@ -91,6 +92,49 @@ async def test_autoerkennung_findet_companion_sensoren(hass: HomeAssistant, sour
     assert found[CONF_SLEEP_DURATION] == SLEEP_ENTITY
     assert found[CONF_STEPS] == "sensor.phone_health_steps"
     assert found[CONF_FOCUS] == "binary_sensor.phone_focus"
+
+
+@pytest.mark.parametrize(
+    "eingabe",
+    [
+        pytest.param({}, id="nichts-angefasst"),
+        pytest.param({CONF_SLEEP_NEED: 480, CONF_AUTO_SLEEP_NEED: True}, id="ohne-freie-tage"),
+        pytest.param({CONF_FREE_DAYS: ["6"]}, id="nur-sonntag"),
+        pytest.param({CONF_FREE_DAYS: []}, id="keine-freien-tage"),
+    ],
+)
+async def test_letzter_schritt_akzeptiert_jede_eingabe(
+    hass: HomeAssistant, source_states, eingabe: dict
+) -> None:
+    """Regression: Der Vorgabewert der freien Tage muss zur Auswahlliste passen.
+
+    Die Auswahlliste arbeitet mit Zeichenketten, der Vorgabewert bestand aber aus
+    Ganzzahlen. Schickt die Oberfläche das Feld nicht mit — was sie regelmäßig tut
+    —, setzt voluptuous den Vorgabewert ein und validiert ihn: „expected str at
+    'free_days'". Die Einrichtung war dadurch praktisch immer blockiert.
+    """
+    result = await _start(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_SLEEP_DURATION: SLEEP_ENTITY}
+    )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["step_id"] == "personal"
+
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], eingabe)
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+
+
+async def test_freie_tage_werden_als_wochentage_gelesen(
+    hass: HomeAssistant, source_states, config_entry
+) -> None:
+    """Die als Zeichenketten gespeicherten Tage müssen als Zahlen ankommen."""
+    config_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    hass.config_entries.async_update_entry(config_entry, options={CONF_FREE_DAYS: ["0", "6"]})
+    await hass.async_block_till_done()
+    assert config_entry.runtime_data.free_days == frozenset({0, 6})
 
 
 async def test_optionen_aendern_modellparameter(

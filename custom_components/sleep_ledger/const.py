@@ -74,7 +74,12 @@ CONF_WEIGHT_REGULARITY: Final = "weight_regularity"
 DEFAULT_DEBT_ALERT_THRESHOLD_MIN: Final = 45.0
 
 #: Freie Tage als Wochentagsindizes (0 = Montag).
-DEFAULT_FREE_DAYS: Final = [5, 6]
+#:
+#: Bewusst **Zeichenketten**: Die Auswahlliste im Config-Flow arbeitet mit
+#: Zeichenketten, und voluptuous validiert auch den eingesetzten Vorgabewert.
+#: Ganzzahlen hier führen zu „expected str at 'free_days'", sobald die Oberfläche
+#: das Feld nicht mitschickt — also praktisch immer.
+DEFAULT_FREE_DAYS: Final = ["5", "6"]
 
 # -- Auswertung -------------------------------------------------------------------
 

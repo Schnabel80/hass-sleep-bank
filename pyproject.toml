@@ -1,6 +1,6 @@
 [project]
 name = "hass-sleep-ledger"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "Home Assistant custom integration for long-term sleep debt, regularity and recovery analysis"
 requires-python = ">=3.13"
 license = "Apache-2.0"

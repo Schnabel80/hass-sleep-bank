@@ -5,7 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from homeassistant.components.number import NumberEntity, NumberEntityDescription, NumberMode
+from homeassistant.components.number import (
+    NumberDeviceClass,
+    NumberEntity,
+    NumberEntityDescription,
+    NumberMode,
+)
 from homeassistant.const import EntityCategory, UnitOfTime
 
 from . import debt as debt_model
@@ -36,6 +41,16 @@ class SleepLedgerNumberDescription(NumberEntityDescription):
 
     option_key: str
     default: float
+    """Vorgabewert in der **gespeicherten** Einheit."""
+
+    stored_per_native: float = 1.0
+    """Umrechnung von der angezeigten in die gespeicherte Einheit.
+
+    Gerechnet und gespeichert wird durchgängig in Minuten — das ist die Einheit
+    des Modells. Angezeigt wird der Schlafbedarf dagegen in Stunden, weil man
+    über Schlaf in Stunden spricht. Dieser Faktor hält beides auseinander, statt
+    die Einheit im Modell zu wechseln.
+    """
 
 
 NUMBERS: tuple[SleepLedgerNumberDescription, ...] = (
@@ -43,10 +58,14 @@ NUMBERS: tuple[SleepLedgerNumberDescription, ...] = (
         key=CONF_SLEEP_NEED,
         option_key=CONF_SLEEP_NEED,
         default=debt_model.DEFAULT_SLEEP_NEED_MIN,
-        native_min_value=300,
-        native_max_value=660,
-        native_step=5,
-        native_unit_of_measurement=UnitOfTime.MINUTES,
+        stored_per_native=60.0,
+        device_class=NumberDeviceClass.DURATION,
+        native_min_value=5.0,
+        native_max_value=11.0,
+        # Sechs-Minuten-Schritte. Feiner wäre Scheingenauigkeit: Der individuelle
+        # Bedarf ist ohnehin auf etwa eine Stunde genau bekannt.
+        native_step=0.1,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         mode=NumberMode.SLIDER,
         icon="mdi:target",
     ),
@@ -108,16 +127,18 @@ class SleepLedgerNumber(SleepLedgerEntity, NumberEntity):
 
     @property
     def native_value(self) -> float:
-        """Aktuell wirksamer Wert."""
+        """Aktuell wirksamer Wert, in der Anzeigeeinheit."""
         raw = self.coordinator.config.get(
             self.entity_description.option_key, self.entity_description.default
         )
         try:
-            return float(raw)
+            stored = float(raw)
         except (TypeError, ValueError):
-            return self.entity_description.default
+            stored = self.entity_description.default
+        return round(stored / self.entity_description.stored_per_native, 4)
 
     async def async_set_native_value(self, value: float) -> None:
         """Wert in die Optionen schreiben; der Update-Listener rechnet neu."""
-        options = {**self.coordinator.entry.options, self.entity_description.option_key: value}
+        stored = round(value * self.entity_description.stored_per_native, 4)
+        options = {**self.coordinator.entry.options, self.entity_description.option_key: stored}
         self.hass.config_entries.async_update_entry(self.coordinator.entry, options=options)

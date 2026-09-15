@@ -256,7 +256,7 @@ Unterbrechung gezählt und fließen in die Fragmentierung ein.
 
 | Entität | Einheit | Inhalt |
 |---|---|---|
-| `sensor.*_acute_sleep_debt` | min | Kumulierte akute Schuld (negativ = Guthaben) |
+| `sensor.*_acute_sleep_debt` | h | Kumulierte akute Schuld (negativ = Guthaben) |
 | `sensor.*_chronic_deficit_per_night` | min | Mittleres Defizit pro Nacht |
 | `sensor.*_nights_to_recovery` | — | Nächte bis zum Ausgleich; Szenarien in den Attributen |
 | `sensor.*_sleep_regularity_index` | — | SRI, −100 … +100 |
@@ -267,13 +267,27 @@ Unterbrechung gezählt und fließen in die Fragmentierung ein.
 | `sensor.*_readiness` | — | Bereitschaft 0–100 (**Heuristik**) |
 | `sensor.*_data_coverage` | % | Erfasste Nächte im Auswertungsfenster |
 | `sensor.*_last_night_confidence` | % | Verlässlichkeit der letzten Nacht |
-| `sensor.*_last_night_duration` | min | Dauer der letzten Nacht |
+| `sensor.*_last_night_duration` | h | Dauer der letzten Nacht |
 | `binary_sensor.*_sleep_debt_warning` | — | Chronisches Defizit über Schwelle |
 | `binary_sensor.*_insufficient_data` | — | Datenlage trägt die Langzeitmetriken nicht |
-| `sensor.*_estimated_sleep_need` | min | Geschätzter Bedarf; Verfahren, Grund und Konfidenz in den Attributen |
+| `sensor.*_estimated_sleep_need` | h | Geschätzter Bedarf; Verfahren, Grund und Konfidenz in den Attributen |
 | `switch.*_sleep_need_calibration` | — | Kalibrierlauf ohne Wecker markieren |
 | `number.*` | — | Schlafbedarf, Warnschwelle, Gewichte der Bereitschaft |
 | `button.*_recalculate` | — | Historie neu auswerten |
+
+### Einheiten
+
+Gerechnet wird durchgängig in Minuten — das ist die Einheit des Modells. Angezeigt
+wird dagegen in **Stunden**, wo die Größenordnung es nahelegt: akute Schuld,
+Dauer der letzten Nacht, geschätzter Bedarf und der Schlafbedarf selbst.
+
+In Minuten bleiben die Größen, die tatsächlich in Minuten liegen: das chronische
+Defizit **pro Nacht** (48 min/Nacht ist greifbarer als 0,8 h/Nacht) und die
+Streuung der Schlafmitte.
+
+Alle Dauern tragen die Gerätekategorie `duration`. Wer eine andere Einheit
+bevorzugt, stellt sie je Entität in den Entitätseinstellungen um — Home Assistant
+rechnet dann selbst um.
 
 ## Beispiele
 

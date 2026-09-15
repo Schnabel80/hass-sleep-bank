@@ -172,16 +172,18 @@ async def test_schlafbedarf_wird_zur_laufzeit_uebernommen(
     ]
     await coordinator.store.async_put_many(nights)
 
+    # Die Entität wird in Stunden bedient, gespeichert wird in Minuten.
     await hass.services.async_call(
         "number",
         "set_value",
-        {"entity_id": "number.sleep_ledger_sleep_need", "value": 420},
+        {"entity_id": "number.sleep_ledger_sleep_need", "value": 7.0},
         blocking=True,
     )
     await hass.async_block_till_done()
 
     assert config_entry.options["sleep_need_min"] == 420
     assert coordinator.data.need_min == 420.0
+    assert hass.states.get("number.sleep_ledger_sleep_need").state == "7.0"
 
 
 async def test_button_stoesst_neuberechnung_an(

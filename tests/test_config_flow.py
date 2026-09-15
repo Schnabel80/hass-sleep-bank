@@ -47,10 +47,11 @@ async def test_vollstaendiger_ablauf(hass: HomeAssistant, source_states) -> None
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {CONF_SLEEP_NEED: 450, CONF_AUTO_SLEEP_NEED: False, CONF_FREE_DAYS: ["5", "6"]},
+        {CONF_SLEEP_NEED: 7.5, CONF_AUTO_SLEEP_NEED: False, CONF_FREE_DAYS: ["5", "6"]},
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_SLEEP_DURATION] == SLEEP_ENTITY
+    # Erfasst in Stunden, gespeichert in Minuten — das Modell rechnet in Minuten.
     assert result["data"][CONF_SLEEP_NEED] == 450
 
 
@@ -98,7 +99,7 @@ async def test_autoerkennung_findet_companion_sensoren(hass: HomeAssistant, sour
     "eingabe",
     [
         pytest.param({}, id="nichts-angefasst"),
-        pytest.param({CONF_SLEEP_NEED: 480, CONF_AUTO_SLEEP_NEED: True}, id="ohne-freie-tage"),
+        pytest.param({CONF_SLEEP_NEED: 8.0, CONF_AUTO_SLEEP_NEED: True}, id="ohne-freie-tage"),
         pytest.param({CONF_FREE_DAYS: ["6"]}, id="nur-sonntag"),
         pytest.param({CONF_FREE_DAYS: []}, id="keine-freien-tage"),
     ],
@@ -135,6 +136,29 @@ async def test_freie_tage_werden_als_wochentage_gelesen(
     hass.config_entries.async_update_entry(config_entry, options={CONF_FREE_DAYS: ["0", "6"]})
     await hass.async_block_till_done()
     assert config_entry.runtime_data.free_days == frozenset({0, 6})
+
+
+@pytest.mark.parametrize(
+    ("stunden", "erwartete_minuten"),
+    [(5.0, 300), (7.5, 450), (8.0, 480), (9.25, 555), (11.0, 660)],
+)
+async def test_schlafbedarf_wird_von_stunden_in_minuten_umgerechnet(
+    hass: HomeAssistant, source_states, stunden: float, erwartete_minuten: int
+) -> None:
+    """Die Oberfläche spricht Stunden, das Modell rechnet in Minuten.
+
+    Die Umrechnung sitzt an genau einer Stelle; geht sie verloren, wäre der
+    Schlafbedarf um den Faktor 60 daneben und das Konto vollständig unbrauchbar.
+    """
+    result = await _start(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_SLEEP_DURATION: SLEEP_ENTITY}
+    )
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_SLEEP_NEED: stunden}
+    )
+    assert result["data"][CONF_SLEEP_NEED] == erwartete_minuten
 
 
 async def test_optionen_aendern_modellparameter(

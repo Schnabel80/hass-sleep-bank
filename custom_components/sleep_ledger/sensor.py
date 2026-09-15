@@ -132,12 +132,18 @@ class SleepLedgerSensorDescription(SensorEntityDescription):
 SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
     SleepLedgerSensorDescription(
         key=KEY_DEBT_ACUTE,
-        # Bewusst ohne device_class: Der Wert wird negativ, sobald ein Guthaben
-        # besteht, und eine negative „Dauer" ist keine sinnvolle Größe.
+        # Gerechnet wird in Minuten, angezeigt in Stunden: Über eine Woche
+        # summiert sich die Schuld auf mehrere Stunden, und „6,8 h" liest sich
+        # besser als „408 min". Die Gerätekategorie erlaubt Home Assistant die
+        # Umrechnung — auch für negative Werte, wenn ein Guthaben besteht — und
+        # lässt den Nutzer die Einheit je Entität selbst wählen.
+        device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:sleep",
         value_fn=lambda data: _round(data.debt.acute_min),
+        suggested_display_precision=1,
         attributes_fn=lambda data: {
             "nights_used": data.debt.nights_used,
             "sleep_need_min": round(data.need_min),
@@ -146,6 +152,10 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
     ),
     SleepLedgerSensorDescription(
         key=KEY_DEBT_CHRONIC,
+        # Hier bleibt es bei Minuten: Ein Defizit *pro Nacht* liegt in der
+        # Größenordnung von Minuten, und „48 min pro Nacht" ist greifbarer als
+        # „0,8 h pro Nacht". Umschaltbar ist es trotzdem.
+        device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:chart-timeline-variant",
@@ -174,6 +184,7 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
     ),
     SleepLedgerSensorDescription(
         key=KEY_SOCIAL_JETLAG,
+        device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.HOURS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:earth",
@@ -186,6 +197,8 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
     ),
     SleepLedgerSensorDescription(
         key=KEY_MIDPOINT_VARIABILITY,
+        # Eine Streuung von wenigen Dutzend Minuten bleibt in Minuten lesbarer.
+        device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:arrow-expand-horizontal",
@@ -235,7 +248,9 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
     ),
     SleepLedgerSensorDescription(
         key=KEY_ESTIMATED_NEED,
+        device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:target",
         value_fn=lambda data: (
@@ -247,6 +262,7 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
         key=KEY_LAST_NIGHT_DURATION,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
         icon="mdi:bed-clock",
         value_fn=lambda data: None if data.last_night is None else data.last_night.total_min,
         attributes_fn=_last_night_attributes,

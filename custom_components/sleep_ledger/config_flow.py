@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
 
 from . import debt as debt_model
@@ -49,6 +50,9 @@ _LOGGER = logging.getLogger(__name__)
 
 TITLE = "Sleep Ledger"
 
+#: Der Schlafbedarf wird in Stunden erfasst und in Minuten gespeichert.
+MINUTES_PER_HOUR = 60.0
+
 #: Namensbestandteile, an denen die Sensoren der iOS-Companion-App erkannt werden.
 #: Reine Bequemlichkeit für die Vorauswahl — die Integration ist nicht an sie gebunden.
 AUTODETECT_SUFFIXES: dict[str, tuple[str, ...]] = {
@@ -63,22 +67,72 @@ AUTODETECT_SUFFIXES: dict[str, tuple[str, ...]] = {
     CONF_STEPS: ("_health_steps", "_steps"),
 }
 
+#: Zustände, die keinen brauchbaren Wert tragen.
+_NO_VALUE = frozenset({"unavailable", "unknown", ""})
 
-def autodetect(hass: HomeAssistant) -> dict[str, str]:
-    """Passende Sensoren der Companion-App als Vorschlag suchen."""
+
+def _device_of(hass: HomeAssistant, entity_id: str | None) -> str | None:
+    """Geräte-ID einer Entität aus der Registrierung."""
+    if not entity_id:
+        return None
+    entry = er.async_get(hass).async_get(entity_id)
+    return entry.device_id if entry else None
+
+
+def _matching(hass: HomeAssistant, domain: str, suffixes: tuple[str, ...]) -> list[str]:
+    """Alle Entitäten einer Domain, deren ID auf einen der Suffixe endet."""
+    ids = [state.entity_id for state in hass.states.async_all(domain)]
+    for suffix in suffixes:
+        if found := [entity_id for entity_id in ids if entity_id.endswith(suffix)]:
+            return found
+    return []
+
+
+def _best(hass: HomeAssistant, candidates: list[str], device_id: str | None) -> str | None:
+    """Den passendsten Kandidaten wählen.
+
+    Ausschlaggebend ist das **Gerät**, nicht der Name: In einem Haushalt mit
+    mehreren Telefonen gibt es leicht ein halbes Dutzend Fokus-Sensoren, und die
+    Entity-IDs desselben Geräts stimmen nicht zwangsläufig überein — die
+    Companion-App behält beim Umbenennen eines Telefons die alten IDs bei. Wer
+    hier alphabetisch sortiert, schlägt zuverlässig das falsche Gerät vor.
+    """
+    if not candidates:
+        return None
+
+    def rank(entity_id: str) -> tuple[bool, bool, str]:
+        state = hass.states.get(entity_id)
+        unusable = state is None or state.state.lower() in _NO_VALUE
+        other_device = bool(device_id) and _device_of(hass, entity_id) != device_id
+        return (other_device, unusable, entity_id)
+
+    return min(candidates, key=rank)
+
+
+def autodetect(hass: HomeAssistant, anchor_entity_id: str | None = None) -> dict[str, str]:
+    """Passende Sensoren als Vorschlag suchen, am Gerät ausgerichtet.
+
+    ``anchor_entity_id`` ist die bereits gewählte Schlafdauer-Entität. Ist sie
+    bekannt, werden alle weiteren Vorschläge auf deren Gerät bezogen; sonst
+    bestimmt die Schlafdauer selbst das Gerät.
+    """
     found: dict[str, str] = {}
-    sensor_ids = [state.entity_id for state in hass.states.async_all("sensor")]
-    for key, suffixes in AUTODETECT_SUFFIXES.items():
-        for suffix in suffixes:
-            matches = [entity_id for entity_id in sensor_ids if entity_id.endswith(suffix)]
-            if matches:
-                found[key] = sorted(matches)[0]
-                break
 
-    focus = [state.entity_id for state in hass.states.async_all("binary_sensor")]
-    focus_matches = [entity_id for entity_id in focus if entity_id.endswith("_focus")]
-    if focus_matches:
-        found[CONF_FOCUS] = sorted(focus_matches)[0]
+    anchor = anchor_entity_id or _best(
+        hass, _matching(hass, "sensor", AUTODETECT_SUFFIXES[CONF_SLEEP_DURATION]), None
+    )
+    if anchor:
+        found[CONF_SLEEP_DURATION] = anchor
+    device_id = _device_of(hass, anchor)
+
+    for key, suffixes in AUTODETECT_SUFFIXES.items():
+        if key == CONF_SLEEP_DURATION:
+            continue
+        if best := _best(hass, _matching(hass, "sensor", suffixes), device_id):
+            found[key] = best
+
+    if best := _best(hass, _matching(hass, "binary_sensor", ("_focus",)), device_id):
+        found[CONF_FOCUS] = best
     return found
 
 
@@ -140,12 +194,18 @@ def personal_schema(defaults: dict[str, Any]) -> vol.Schema:
     """Schritt 3 — persönliche Parameter."""
     return vol.Schema(
         {
+            # In Stunden, weil man über Schlaf in Stunden spricht. Gespeichert
+            # wird in Minuten — der Umrechnung dient `_needs_to_minutes`.
             vol.Required(
                 CONF_SLEEP_NEED,
-                default=defaults.get(CONF_SLEEP_NEED, debt_model.DEFAULT_SLEEP_NEED_MIN),
+                default=round(
+                    defaults.get(CONF_SLEEP_NEED, debt_model.DEFAULT_SLEEP_NEED_MIN)
+                    / MINUTES_PER_HOUR,
+                    2,
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    min=300, max=660, step=5, unit_of_measurement="min", mode="slider"
+                    min=5, max=11, step=0.1, unit_of_measurement="h", mode="slider"
                 )
             ),
             vol.Optional(
@@ -203,16 +263,17 @@ class SleepLedgerConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._data.update(_clean(user_input))
             return await self.async_step_personal()
-        return self.async_show_form(
-            step_id="timing", data_schema=timing_schema(autodetect(self.hass))
-        )
+        # Ab hier ist die Schlafdauer-Entität bekannt: Fokus-Sensor und
+        # Schrittzähler werden auf deren Gerät bezogen vorgeschlagen.
+        defaults = autodetect(self.hass, self._data.get(CONF_SLEEP_DURATION))
+        return self.async_show_form(step_id="timing", data_schema=timing_schema(defaults))
 
     async def async_step_personal(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Schritt 3: Schlafbedarf und freie Tage."""
         if user_input is not None:
-            self._data.update(_clean(user_input))
+            self._data.update(_need_to_minutes(_clean(user_input)))
             return self.async_create_entry(title=TITLE, data=self._data)
         return self.async_show_form(step_id="personal", data_schema=personal_schema({}))
 
@@ -251,7 +312,12 @@ class SleepLedgerOptionsFlow(OptionsFlow):
         """Zeiterfassung ändern."""
         if user_input is not None:
             return self._save(user_input)
-        return self.async_show_form(step_id="timing", data_schema=timing_schema(self._merged()))
+        current = self._merged()
+        defaults = {
+            **autodetect(self.hass, current.get(CONF_SLEEP_DURATION)),
+            **current,
+        }
+        return self.async_show_form(step_id="timing", data_schema=timing_schema(defaults))
 
     async def async_step_model(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Modellparameter ändern."""
@@ -318,3 +384,17 @@ class SleepLedgerOptionsFlow(OptionsFlow):
 def _clean(user_input: dict[str, Any]) -> dict[str, Any]:
     """Leere optionale Felder verwerfen, damit sie nicht als ``None`` landen."""
     return {key: value for key, value in user_input.items() if value not in (None, "", [])}
+
+
+def _need_to_minutes(user_input: dict[str, Any]) -> dict[str, Any]:
+    """Den in Stunden erfassten Schlafbedarf in Minuten umrechnen.
+
+    Das Modell rechnet durchgängig in Minuten; nur die Oberfläche spricht
+    Stunden. Die Umrechnung sitzt bewusst an dieser einen Stelle.
+    """
+    if CONF_SLEEP_NEED not in user_input:
+        return user_input
+    return {
+        **user_input,
+        CONF_SLEEP_NEED: round(float(user_input[CONF_SLEEP_NEED]) * MINUTES_PER_HOUR),
+    }

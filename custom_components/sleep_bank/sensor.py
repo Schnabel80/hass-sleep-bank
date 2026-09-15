@@ -36,7 +36,7 @@ from .const import (
     KEY_SRI,
     TREND_WINDOW_DAYS,
 )
-from .entity import SleepLedgerEntity
+from .entity import SleepBankEntity
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -44,8 +44,8 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-    from . import SleepLedgerConfigEntry
-    from .coordinator import LedgerData, SleepLedgerCoordinator
+    from . import SleepBankConfigEntry
+    from .coordinator import SleepBankCoordinator, SleepBankData
 
 PARALLEL_UPDATES = 0
 
@@ -57,7 +57,7 @@ def _round(value: float | None, digits: int = 0) -> float | None:
     return round(value) if digits == 0 else round(value, digits)
 
 
-def _midpoint_text(data: LedgerData) -> str | None:
+def _midpoint_text(data: SleepBankData) -> str | None:
     minutes = data.regularity.midpoint_minutes
     if minutes is None:
         return None
@@ -65,7 +65,7 @@ def _midpoint_text(data: LedgerData) -> str | None:
     return f"{total // 60:02d}:{total % 60:02d}"
 
 
-def _recovery_attributes(data: LedgerData) -> dict[str, Any]:
+def _recovery_attributes(data: SleepBankData) -> dict[str, Any]:
     """Erholungsszenarien als Attribute — die Zahl allein sagt zu wenig."""
     return {
         f"nights_at_{int(target // 60)}h{int(target % 60):02d}": nights
@@ -73,7 +73,7 @@ def _recovery_attributes(data: LedgerData) -> dict[str, Any]:
     }
 
 
-def _readiness_attributes(data: LedgerData) -> dict[str, Any]:
+def _readiness_attributes(data: SleepBankData) -> dict[str, Any]:
     result = data.readiness
     return {
         "is_heuristic": result.is_heuristic,
@@ -82,7 +82,7 @@ def _readiness_attributes(data: LedgerData) -> dict[str, Any]:
     }
 
 
-def _last_night_attributes(data: LedgerData) -> dict[str, Any]:
+def _last_night_attributes(data: SleepBankData) -> dict[str, Any]:
     night = data.last_night
     if night is None:
         return {}
@@ -99,7 +99,7 @@ def _last_night_attributes(data: LedgerData) -> dict[str, Any]:
     }
 
 
-def _need_attributes(data: LedgerData) -> dict[str, Any]:
+def _need_attributes(data: SleepBankData) -> dict[str, Any]:
     """Wie die Bedarfsschätzung zustande kam — und warum gegebenenfalls nicht.
 
     Der Grund gehört an den Sensor und nicht ins Protokoll: „alle Nächte enden am
@@ -122,15 +122,15 @@ def _need_attributes(data: LedgerData) -> dict[str, Any]:
 
 
 @dataclass(frozen=True, kw_only=True)
-class SleepLedgerSensorDescription(SensorEntityDescription):
+class SleepBankSensorDescription(SensorEntityDescription):
     """Sensorbeschreibung mit Auswertungsfunktion."""
 
-    value_fn: Callable[[LedgerData], float | str | None]
-    attributes_fn: Callable[[LedgerData], dict[str, Any]] | None = None
+    value_fn: Callable[[SleepBankData], float | str | None]
+    attributes_fn: Callable[[SleepBankData], dict[str, Any]] | None = None
 
 
-SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
-    SleepLedgerSensorDescription(
+SENSORS: tuple[SleepBankSensorDescription, ...] = (
+    SleepBankSensorDescription(
         key=KEY_DEBT_ACUTE,
         # Gerechnet wird in Minuten, angezeigt in Stunden: Über eine Woche
         # summiert sich die Schuld auf mehrere Stunden, und „6,8 h" liest sich
@@ -150,7 +150,7 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
             "last_night_balance_min": _round(data.debt.last_balance_min),
         },
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_DEBT_CHRONIC,
         # Hier bleibt es bei Minuten: Ein Defizit *pro Nacht* liegt in der
         # Größenordnung von Minuten, und „48 min pro Nacht" ist greifbarer als
@@ -169,20 +169,20 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
             "sleep_need_min": round(data.need_min),
         },
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_NIGHTS_TO_RECOVERY,
         icon="mdi:calendar-clock",
         value_fn=lambda data: data.nights_to_recovery.get(data.need_min),
         attributes_fn=_recovery_attributes,
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_SRI,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:repeat",
         value_fn=lambda data: _round(data.regularity.sri, 1),
         attributes_fn=lambda data: {"evaluated_day_pairs": data.regularity.sri_pairs},
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_SOCIAL_JETLAG,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.HOURS,
@@ -190,12 +190,12 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
         icon="mdi:earth",
         value_fn=lambda data: _round(data.regularity.social_jetlag_hours, 2),
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_MIDPOINT,
         icon="mdi:clock-outline",
         value_fn=_midpoint_text,
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_MIDPOINT_VARIABILITY,
         # Eine Streuung von wenigen Dutzend Minuten bleibt in Minuten lesbarer.
         device_class=SensorDeviceClass.DURATION,
@@ -204,7 +204,7 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
         icon="mdi:arrow-expand-horizontal",
         value_fn=lambda data: _round(data.regularity.midpoint_variability_min),
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_RECOVERY,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:heart-pulse",
@@ -216,14 +216,14 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
             "baseline_samples": data.physiology.baseline_samples,
         },
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_READINESS,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:battery-heart-variant",
         value_fn=lambda data: _round(data.readiness.score),
         attributes_fn=_readiness_attributes,
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_COVERAGE,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -235,7 +235,7 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
             "stored_nights": data.stored_nights,
         },
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_CONFIDENCE,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -246,7 +246,7 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
         ),
         attributes_fn=_last_night_attributes,
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_ESTIMATED_NEED,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
@@ -258,7 +258,7 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
         ),
         attributes_fn=_need_attributes,
     ),
-    SleepLedgerSensorDescription(
+    SleepBankSensorDescription(
         key=KEY_LAST_NIGHT_DURATION,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
@@ -272,21 +272,21 @@ SENSORS: tuple[SleepLedgerSensorDescription, ...] = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: SleepLedgerConfigEntry,
+    entry: SleepBankConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Sensoren anlegen."""
     coordinator = entry.runtime_data
-    async_add_entities(SleepLedgerSensor(coordinator, description) for description in SENSORS)
+    async_add_entities(SleepBankSensor(coordinator, description) for description in SENSORS)
 
 
-class SleepLedgerSensor(SleepLedgerEntity, SensorEntity):
+class SleepBankSensor(SleepBankEntity, SensorEntity):
     """Ein aus der Nachthistorie berechneter Sensor."""
 
-    entity_description: SleepLedgerSensorDescription
+    entity_description: SleepBankSensorDescription
 
     def __init__(
-        self, coordinator: SleepLedgerCoordinator, description: SleepLedgerSensorDescription
+        self, coordinator: SleepBankCoordinator, description: SleepBankSensorDescription
     ) -> None:
         """Sensor aus seiner Beschreibung aufbauen."""
         super().__init__(coordinator, description.key)

@@ -11,8 +11,8 @@ from datetime import date, timedelta
 from itertools import pairwise
 
 import pytest
-from sleep_ledger import debt
-from sleep_ledger.models import SleepNight
+from sleep_bank import debt
+from sleep_bank.models import SleepNight
 
 START = date(2026, 1, 1)
 

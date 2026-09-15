@@ -1,10 +1,10 @@
 <picture>
   <source
     media="(prefers-color-scheme: dark)"
-    srcset="custom_components/sleep_ledger/brand/dark_logo.png">
+    srcset="custom_components/sleep_bank/brand/dark_logo.png">
   <img
-    src="custom_components/sleep_ledger/brand/logo.png"
-    alt="Sleep Ledger"
+    src="custom_components/sleep_bank/brand/logo.png"
+    alt="Sleep Bank"
     width="294">
 </picture>
 
@@ -184,14 +184,14 @@ Konkret:
 ### Über HACS
 
 1. HACS → Integrationen → Menü → Benutzerdefinierte Repositories
-2. `https://github.com/Schnabel80/hass-sleep-ledger` als Kategorie *Integration*
+2. `https://github.com/Schnabel80/hass-sleep-bank` als Kategorie *Integration*
    hinzufügen
-3. „Sleep Ledger" installieren, Home Assistant neu starten
-4. Einstellungen → Geräte & Dienste → Integration hinzufügen → „Sleep Ledger"
+3. „Sleep Bank" installieren, Home Assistant neu starten
+4. Einstellungen → Geräte & Dienste → Integration hinzufügen → „Sleep Bank"
 
 ### Manuell
 
-Ordner `custom_components/sleep_ledger` nach `<config>/custom_components/`
+Ordner `custom_components/sleep_bank` nach `<config>/custom_components/`
 kopieren und Home Assistant neu starten.
 
 ## Einrichtung
@@ -298,19 +298,19 @@ automation:
   - alias: Schonmodus bei chronischem Defizit
     triggers:
       - trigger: state
-        entity_id: binary_sensor.sleep_ledger_sleep_debt_warning
+        entity_id: binary_sensor.sleep_bank_sleep_debt_warning
         to: "on"
     conditions:
       - condition: state
-        entity_id: binary_sensor.sleep_ledger_insufficient_data
+        entity_id: binary_sensor.sleep_bank_insufficient_data
         state: "off"
     actions:
       - action: notify.mobile_app
         data:
           message: >
             Chronisches Defizit von
-            {{ states('sensor.sleep_ledger_chronic_deficit_per_night') }} min/Nacht.
-            Ausgleich in {{ states('sensor.sleep_ledger_nights_to_recovery') }} Nächten.
+            {{ states('sensor.sleep_bank_chronic_deficit_per_night') }} min/Nacht.
+            Ausgleich in {{ states('sensor.sleep_bank_nights_to_recovery') }} Nächten.
 ```
 
 **Weckzeit an die Schuld koppeln:**
@@ -319,7 +319,7 @@ automation:
   - alias: Später wecken bei hoher Schlafschuld
     triggers:
       - trigger: numeric_state
-        entity_id: sensor.sleep_ledger_acute_sleep_debt
+        entity_id: sensor.sleep_bank_acute_sleep_debt
         above: 240
     actions:
       - action: input_datetime.set_datetime
@@ -354,13 +354,13 @@ und Konfidenz je Nacht.
 
 ## Entfernen
 
-Einstellungen → Geräte & Dienste → Sleep Ledger → Menü → Löschen. Die gespeicherte
+Einstellungen → Geräte & Dienste → Sleep Bank → Menü → Löschen. Die gespeicherte
 Nachthistorie wird dabei mitgelöscht. Bei Installation über HACS anschließend dort
 deinstallieren.
 
 ## Bildmarke
 
-Icon und Logo liegen in `custom_components/sleep_ledger/brand/` (`icon.png`,
+Icon und Logo liegen in `custom_components/sleep_bank/brand/` (`icon.png`,
 `icon@2x.png`, `logo.png`, `logo@2x.png`, `dark_logo*.png`) in den von Home
 Assistant geforderten Größen.
 

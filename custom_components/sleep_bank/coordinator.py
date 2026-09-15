@@ -65,7 +65,7 @@ SEED_LOOKBACK_DAYS = 90
 
 
 @dataclass(slots=True)
-class LedgerData:
+class SleepBankData:
     """Alles, was die Entitäten anzeigen. Ein Schnappschuss je Berechnung."""
 
     debt: debt_model.DebtResult
@@ -90,7 +90,7 @@ class LedgerData:
     stored_nights: int = 0
 
 
-class SleepLedgerCoordinator(DataUpdateCoordinator[LedgerData]):
+class SleepBankCoordinator(DataUpdateCoordinator[SleepBankData]):
     """Hält die Nachthistorie und berechnet daraus alle Kennzahlen.
 
     Die Berechnung ist rein lokal — es gibt kein Gerät und keinen Dienst
@@ -377,7 +377,7 @@ class SleepLedgerCoordinator(DataUpdateCoordinator[LedgerData]):
 
     # -- Berechnung ---------------------------------------------------------------
 
-    async def _async_update_data(self) -> LedgerData:
+    async def _async_update_data(self) -> SleepBankData:
         """Alle Kennzahlen aus der gespeicherten Historie berechnen."""
         nights = self.store.nights  # nach Datum sortiert
         today = dt_util.now().date()
@@ -431,7 +431,7 @@ class SleepLedgerCoordinator(DataUpdateCoordinator[LedgerData]):
                     debt_result.acute_min, target_sleep_min=target, need_min=need
                 )
 
-        return LedgerData(
+        return SleepBankData(
             debt=debt_result,
             regularity=regularity_result,
             physiology=physiology_result,

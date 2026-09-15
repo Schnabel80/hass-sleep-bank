@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-TITLE = "Sleep Ledger"
+TITLE = "Sleep Bank"
 
 #: Der Schlafbedarf wird in Stunden erfasst und in Minuten gespeichert.
 MINUTES_PER_HOUR = 60.0
@@ -227,7 +227,7 @@ def personal_schema(defaults: dict[str, Any]) -> vol.Schema:
     )
 
 
-class SleepLedgerConfigFlow(ConfigFlow, domain=DOMAIN):
+class SleepBankConfigFlow(ConfigFlow, domain=DOMAIN):
     """Mehrstufige Ersteinrichtung."""
 
     VERSION = 1
@@ -278,12 +278,12 @@ class SleepLedgerConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="personal", data_schema=personal_schema({}))
 
     @staticmethod
-    def async_get_options_flow(config_entry: ConfigEntry) -> SleepLedgerOptionsFlow:
+    def async_get_options_flow(config_entry: ConfigEntry) -> SleepBankOptionsFlow:
         """Optionsdialog bereitstellen."""
-        return SleepLedgerOptionsFlow()
+        return SleepBankOptionsFlow()
 
 
-class SleepLedgerOptionsFlow(OptionsFlow):
+class SleepBankOptionsFlow(OptionsFlow):
     """Nachträgliche Änderung aller Parameter."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:

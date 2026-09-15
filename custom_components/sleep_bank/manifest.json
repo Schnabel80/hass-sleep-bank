@@ -1,15 +1,15 @@
 {
-  "domain": "sleep_ledger",
-  "name": "Sleep Ledger",
+  "domain": "sleep_bank",
+  "name": "Sleep Bank",
   "after_dependencies": ["recorder"],
   "codeowners": ["@Schnabel80"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/Schnabel80/hass-sleep-ledger",
+  "documentation": "https://github.com/Schnabel80/hass-sleep-bank",
   "integration_type": "service",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/Schnabel80/hass-sleep-ledger/issues",
+  "issue_tracker": "https://github.com/Schnabel80/hass-sleep-bank/issues",
   "quality_scale": "bronze",
   "requirements": [],
-  "version": "0.1.0a3"
+  "version": "0.1.0a4"
 }

@@ -11,8 +11,8 @@ from datetime import date, datetime, timedelta
 
 import pytest
 from real_history import BERLIN, FOCUS_HISTORY, SLEEP_ARRIVALS, _at
-from sleep_ledger import timing
-from sleep_ledger.models import Provenance
+from sleep_bank import timing
+from sleep_bank.models import Provenance
 
 
 def _steps(entries: list[tuple[str, float]]) -> list[tuple[datetime, float]]:

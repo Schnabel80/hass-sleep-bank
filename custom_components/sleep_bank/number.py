@@ -23,20 +23,20 @@ from .const import (
     CONF_WEIGHT_REGULARITY,
     DEFAULT_DEBT_ALERT_THRESHOLD_MIN,
 )
-from .entity import SleepLedgerEntity
+from .entity import SleepBankEntity
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-    from . import SleepLedgerConfigEntry
-    from .coordinator import SleepLedgerCoordinator
+    from . import SleepBankConfigEntry
+    from .coordinator import SleepBankCoordinator
 
 PARALLEL_UPDATES = 0
 
 
 @dataclass(frozen=True, kw_only=True)
-class SleepLedgerNumberDescription(NumberEntityDescription):
+class SleepBankNumberDescription(NumberEntityDescription):
     """Beschreibung eines einstellbaren Parameters."""
 
     option_key: str
@@ -53,8 +53,8 @@ class SleepLedgerNumberDescription(NumberEntityDescription):
     """
 
 
-NUMBERS: tuple[SleepLedgerNumberDescription, ...] = (
-    SleepLedgerNumberDescription(
+NUMBERS: tuple[SleepBankNumberDescription, ...] = (
+    SleepBankNumberDescription(
         key=CONF_SLEEP_NEED,
         option_key=CONF_SLEEP_NEED,
         default=debt_model.DEFAULT_SLEEP_NEED_MIN,
@@ -69,7 +69,7 @@ NUMBERS: tuple[SleepLedgerNumberDescription, ...] = (
         mode=NumberMode.SLIDER,
         icon="mdi:target",
     ),
-    SleepLedgerNumberDescription(
+    SleepBankNumberDescription(
         key=CONF_DEBT_ALERT_THRESHOLD,
         option_key=CONF_DEBT_ALERT_THRESHOLD,
         default=DEFAULT_DEBT_ALERT_THRESHOLD_MIN,
@@ -82,7 +82,7 @@ NUMBERS: tuple[SleepLedgerNumberDescription, ...] = (
         icon="mdi:alert-outline",
     ),
     *(
-        SleepLedgerNumberDescription(
+        SleepBankNumberDescription(
             key=key,
             option_key=key,
             default=readiness_model.DEFAULT_WEIGHTS[name],
@@ -105,21 +105,21 @@ NUMBERS: tuple[SleepLedgerNumberDescription, ...] = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: SleepLedgerConfigEntry,
+    entry: SleepBankConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Parameter-Entitäten anlegen."""
     coordinator = entry.runtime_data
-    async_add_entities(SleepLedgerNumber(coordinator, description) for description in NUMBERS)
+    async_add_entities(SleepBankNumber(coordinator, description) for description in NUMBERS)
 
 
-class SleepLedgerNumber(SleepLedgerEntity, NumberEntity):
+class SleepBankNumber(SleepBankEntity, NumberEntity):
     """Ein Modellparameter, der in den Optionen des Config-Entries lebt."""
 
-    entity_description: SleepLedgerNumberDescription
+    entity_description: SleepBankNumberDescription
 
     def __init__(
-        self, coordinator: SleepLedgerCoordinator, description: SleepLedgerNumberDescription
+        self, coordinator: SleepBankCoordinator, description: SleepBankNumberDescription
     ) -> None:
         """Parameter aus seiner Beschreibung aufbauen."""
         super().__init__(coordinator, description.key)

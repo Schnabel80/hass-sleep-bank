@@ -11,7 +11,7 @@ import random
 from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING
 
-from sleep_ledger.models import Provenance, SleepNight
+from sleep_bank.models import Provenance, SleepNight
 
 if TYPE_CHECKING:
     from collections.abc import Callable

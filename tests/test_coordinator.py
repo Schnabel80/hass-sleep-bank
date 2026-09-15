@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from conftest import SLEEP_ENTITY
 
-from custom_components.sleep_ledger.models import Provenance, SleepNight
+from custom_components.sleep_bank.models import Provenance, SleepNight
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -137,7 +137,7 @@ async def test_kennzahlen_erscheinen_mit_genug_historie(
     assert data.readiness.score is not None
     assert data.coverage == pytest.approx(1.0)
 
-    state = hass.states.get("sensor.sleep_ledger_chronic_deficit_per_night")
+    state = hass.states.get("sensor.sleep_bank_chronic_deficit_per_night")
     assert state is not None and state.state == "80"
 
 
@@ -176,14 +176,14 @@ async def test_schlafbedarf_wird_zur_laufzeit_uebernommen(
     await hass.services.async_call(
         "number",
         "set_value",
-        {"entity_id": "number.sleep_ledger_sleep_need", "value": 7.0},
+        {"entity_id": "number.sleep_bank_sleep_need", "value": 7.0},
         blocking=True,
     )
     await hass.async_block_till_done()
 
     assert config_entry.options["sleep_need_min"] == 420
     assert coordinator.data.need_min == 420.0
-    assert hass.states.get("number.sleep_ledger_sleep_need").state == "7.0"
+    assert hass.states.get("number.sleep_bank_sleep_need").state == "7.0"
 
 
 async def test_button_stoesst_neuberechnung_an(
@@ -193,7 +193,7 @@ async def test_button_stoesst_neuberechnung_an(
     await hass.services.async_call(
         "button",
         "press",
-        {"entity_id": "button.sleep_ledger_recalculate"},
+        {"entity_id": "button.sleep_bank_recalculate"},
         blocking=True,
     )
     await hass.async_block_till_done()
@@ -319,7 +319,7 @@ async def test_kalibrierschalter_setzt_das_fenster(
     await hass.services.async_call(
         "switch",
         "turn_on",
-        {"entity_id": "switch.sleep_ledger_sleep_need_calibration"},
+        {"entity_id": "switch.sleep_bank_sleep_need_calibration"},
         blocking=True,
     )
     await hass.async_block_till_done()
@@ -329,7 +329,7 @@ async def test_kalibrierschalter_setzt_das_fenster(
     await hass.services.async_call(
         "switch",
         "turn_off",
-        {"entity_id": "switch.sleep_ledger_sleep_need_calibration"},
+        {"entity_id": "switch.sleep_bank_sleep_need_calibration"},
         blocking=True,
     )
     await hass.async_block_till_done()

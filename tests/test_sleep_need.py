@@ -15,8 +15,8 @@ import random
 from datetime import date, datetime, time, timedelta
 
 import pytest
-from sleep_ledger import sleep_need as need
-from sleep_ledger.models import Provenance, SleepNight
+from sleep_bank import sleep_need as need
+from sleep_bank.models import Provenance, SleepNight
 
 START = date(2026, 1, 5)  # ein Montag
 FREE = frozenset({5, 6})

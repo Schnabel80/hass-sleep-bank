@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components"))
 
-from sleep_ledger import debt, physiology, readiness, regularity
+from sleep_bank import debt, physiology, readiness, regularity
 from sleepers import SLEEPERS, generate
 
 DAYS = 90

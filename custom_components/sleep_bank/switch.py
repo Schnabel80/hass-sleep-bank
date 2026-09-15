@@ -9,28 +9,28 @@ from homeassistant.const import EntityCategory
 
 from . import sleep_need as need_model
 from .const import KEY_CALIBRATION
-from .entity import SleepLedgerEntity
+from .entity import SleepBankEntity
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-    from . import SleepLedgerConfigEntry
-    from .coordinator import SleepLedgerCoordinator
+    from . import SleepBankConfigEntry
+    from .coordinator import SleepBankCoordinator
 
 PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: SleepLedgerConfigEntry,
+    entry: SleepBankConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Kalibrierschalter anlegen."""
     async_add_entities([CalibrationSwitch(entry.runtime_data)])
 
 
-class CalibrationSwitch(SleepLedgerEntity, SwitchEntity):
+class CalibrationSwitch(SleepBankEntity, SwitchEntity):
     """Markiert einen Zeitraum ohne Wecker zur Bedarfsbestimmung.
 
     Der Nutzer schaltet ein, wenn eine Phase ohne Wecker beginnt — Urlaub, freie
@@ -46,7 +46,7 @@ class CalibrationSwitch(SleepLedgerEntity, SwitchEntity):
     _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:target-variant"
 
-    def __init__(self, coordinator: SleepLedgerCoordinator) -> None:
+    def __init__(self, coordinator: SleepBankCoordinator) -> None:
         """Schalter aufsetzen."""
         super().__init__(coordinator, KEY_CALIBRATION)
 

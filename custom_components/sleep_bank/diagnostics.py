@@ -11,11 +11,11 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
-    from . import SleepLedgerConfigEntry
+    from . import SleepBankConfigEntry
 
 
 async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, entry: SleepLedgerConfigEntry
+    hass: HomeAssistant, entry: SleepBankConfigEntry
 ) -> dict[str, Any]:
     """Diagnose für einen Config-Entry zusammenstellen."""
     coordinator = entry.runtime_data

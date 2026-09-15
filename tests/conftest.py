@@ -2,11 +2,11 @@
 
 Zwei Importpfade, mit Absicht:
 
-* ``sleep_ledger.*`` — die Modellmodule, so wie der Simulator sie verwendet.
-* ``custom_components.sleep_ledger.*`` — die Integration, wie Home Assistant sie
+* ``sleep_bank.*`` — die Modellmodule, so wie der Simulator sie verwendet.
+* ``custom_components.sleep_bank.*`` — die Integration, wie Home Assistant sie
   lädt. Über diesen Weg laufen die Tests der HA-Schicht.
 
-Beide Wege benötigen Home Assistant im Environment, weil ``sleep_ledger/__init__.py``
+Beide Wege benötigen Home Assistant im Environment, weil ``sleep_bank/__init__.py``
 der Einstiegspunkt von HA ist und beim Paketimport mitläuft. Dass die
 Modellmodule selbst frei von HA-Importen bleiben, prüft ``test_architecture.py``
 statisch — ein Importversuch könnte das nicht zeigen.
@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT / "custom_components"))
 import pytest  # noqa: E402
 from pytest_homeassistant_custom_component.common import MockConfigEntry  # noqa: E402
 
-from custom_components.sleep_ledger.const import (  # noqa: E402
+from custom_components.sleep_bank.const import (  # noqa: E402
     CONF_AWAKE,
     CONF_FOCUS,
     CONF_HRV,
@@ -76,4 +76,4 @@ def source_states(hass):
 @pytest.fixture
 def config_entry():
     """Vorkonfigurierter Config-Entry."""
-    return MockConfigEntry(domain=DOMAIN, title="Sleep Ledger", data=dict(BASE_CONFIG))
+    return MockConfigEntry(domain=DOMAIN, title="Sleep Bank", data=dict(BASE_CONFIG))

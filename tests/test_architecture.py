@@ -2,7 +2,7 @@
 
 Die Trennung zwischen Modellmathematik und Home-Assistant-Anbindung ist die
 tragende Entwurfsentscheidung dieser Integration. Sie lässt sich nicht durch
-einen Importversuch prüfen — das Paket ``sleep_ledger`` ist der Einstiegspunkt
+einen Importversuch prüfen — das Paket ``sleep_bank`` ist der Einstiegspunkt
 von Home Assistant und zieht HA beim Paketimport zwangsläufig mit herein.
 
 Prüfbar ist stattdessen die Eigenschaft, auf die es ankommt: **kein Modellmodul
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-COMPONENT = Path(__file__).resolve().parents[1] / "custom_components" / "sleep_ledger"
+COMPONENT = Path(__file__).resolve().parents[1] / "custom_components" / "sleep_bank"
 
 #: Module, die frei von Home-Assistant-Abhängigkeiten bleiben müssen.
 PURE_MODULES = (

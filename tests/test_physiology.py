@@ -6,8 +6,8 @@ import random
 from datetime import date, timedelta
 
 import pytest
-from sleep_ledger import physiology
-from sleep_ledger.models import SleepNight
+from sleep_bank import physiology
+from sleep_bank.models import SleepNight
 
 START = date(2026, 1, 1)
 

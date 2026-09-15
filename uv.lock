@@ -2317,8 +2317,8 @@ wheels = [
 ]
 
 [[package]]
-name = "hass-sleep-ledger"
-version = "0.1.0a2"
+name = "hass-sleep-bank"
+version = "0.1.0a4"
 source = { virtual = "." }
 
 [package.dev-dependencies]

@@ -1,4 +1,4 @@
-"""Sleep Ledger — Langzeitauswertung von Schlafdaten in Home Assistant."""
+"""Sleep Bank — Langzeitauswertung von Schlafdaten in Home Assistant."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from .const import (
     CONF_WEIGHT_REGULARITY,
     PLATFORMS,
 )
-from .coordinator import SleepLedgerCoordinator
+from .coordinator import SleepBankCoordinator
 from .store import NightStore
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-type SleepLedgerConfigEntry = ConfigEntry[SleepLedgerCoordinator]
+type SleepBankConfigEntry = ConfigEntry[SleepBankCoordinator]
 
 #: Optionen, die sich zur Laufzeit ändern lassen, ohne die Integration neu zu laden.
 #: Alles andere — vor allem die Quellentitäten — erzwingt einen Neustart des Eintrags.
@@ -43,9 +43,9 @@ RUNTIME_OPTIONS = frozenset(
 )
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: SleepLedgerConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: SleepBankConfigEntry) -> bool:
     """Config-Entry einrichten."""
-    coordinator = SleepLedgerCoordinator(hass, entry)
+    coordinator = SleepBankCoordinator(hass, entry)
     await coordinator.async_initialize()
     await coordinator.async_config_entry_first_refresh()
 
@@ -55,7 +55,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SleepLedgerConfigEntry) 
     return True
 
 
-async def async_update_options(hass: HomeAssistant, entry: SleepLedgerConfigEntry) -> None:
+async def async_update_options(hass: HomeAssistant, entry: SleepBankConfigEntry) -> None:
     """Auf Optionsänderungen reagieren.
 
     Reine Modellparameter werden im laufenden Betrieb übernommen — ein Neuladen
@@ -78,11 +78,11 @@ async def async_update_options(hass: HomeAssistant, entry: SleepLedgerConfigEntr
     await coordinator.async_request_refresh()
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: SleepLedgerConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: SleepBankConfigEntry) -> bool:
     """Config-Entry entladen."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-async def async_remove_entry(hass: HomeAssistant, entry: SleepLedgerConfigEntry) -> None:
+async def async_remove_entry(hass: HomeAssistant, entry: SleepBankConfigEntry) -> None:
     """Beim Entfernen der Integration die gespeicherte Nachthistorie löschen."""
     await NightStore(hass, entry.entry_id).async_remove()

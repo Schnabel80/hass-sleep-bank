@@ -1,4 +1,4 @@
-"""Datenmodell für Sleep Ledger.
+"""Datenmodell für Sleep Bank.
 
 Reines Python — dieses Modul importiert bewusst nichts aus ``homeassistant``,
 damit es im Simulator und in Unit-Tests ohne HA-Testharness nutzbar ist.

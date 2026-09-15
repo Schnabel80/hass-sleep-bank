@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from sleep_ledger import readiness
+from sleep_bank import readiness
 
 
 def test_ausgeruht_ergibt_hohen_wert() -> None:

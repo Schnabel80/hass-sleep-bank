@@ -6,8 +6,8 @@ import random
 from datetime import date, datetime, time, timedelta, timezone
 
 import pytest
-from sleep_ledger import regularity
-from sleep_ledger.models import Provenance, SleepNight
+from sleep_bank import regularity
+from sleep_bank.models import Provenance, SleepNight
 
 BERLIN = timezone(timedelta(hours=2))
 START = date(2026, 1, 1)

@@ -5,9 +5,9 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
-from custom_components.sleep_ledger.diagnostics import async_get_config_entry_diagnostics
-from custom_components.sleep_ledger.models import Provenance, SleepNight
-from custom_components.sleep_ledger.store import NightStore
+from custom_components.sleep_bank.diagnostics import async_get_config_entry_diagnostics
+from custom_components.sleep_bank.models import Provenance, SleepNight
+from custom_components.sleep_bank.store import NightStore
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant

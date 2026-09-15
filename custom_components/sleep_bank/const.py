@@ -13,7 +13,7 @@ from typing import Final
 
 from homeassistant.const import Platform
 
-DOMAIN: Final = "sleep_ledger"
+DOMAIN: Final = "sleep_bank"
 
 PLATFORMS: Final[list[Platform]] = [
     Platform.SENSOR,

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
-from sleep_ledger.models import Provenance, SleepNight, coverage
+from sleep_bank.models import Provenance, SleepNight, coverage
 
 BERLIN = timezone(timedelta(hours=2))
 

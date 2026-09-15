@@ -10,8 +10,8 @@ from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.sleep_ledger.config_flow import autodetect
-from custom_components.sleep_ledger.const import (
+from custom_components.sleep_bank.config_flow import autodetect
+from custom_components.sleep_bank.const import (
     CONF_AUTO_SLEEP_NEED,
     CONF_FOCUS,
     CONF_FREE_DAYS,

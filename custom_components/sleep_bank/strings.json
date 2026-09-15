@@ -45,7 +45,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Sleep Ledger",
+        "title": "Sleep Bank",
         "menu_options": {
           "sources": "Source entities",
           "timing": "Sleep timing",

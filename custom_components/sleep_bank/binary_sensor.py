@@ -11,21 +11,21 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.const import EntityCategory
 
 from .const import COVERAGE_WINDOW_DAYS, KEY_DEBT_ALERT, KEY_LOW_CONFIDENCE, MIN_COVERAGE
-from .entity import SleepLedgerEntity
+from .entity import SleepBankEntity
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-    from . import SleepLedgerConfigEntry
-    from .coordinator import SleepLedgerCoordinator
+    from . import SleepBankConfigEntry
+    from .coordinator import SleepBankCoordinator
 
 PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: SleepLedgerConfigEntry,
+    entry: SleepBankConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Warnsensoren anlegen."""
@@ -33,12 +33,12 @@ async def async_setup_entry(
     async_add_entities([DebtAlert(coordinator), LowConfidence(coordinator)])
 
 
-class DebtAlert(SleepLedgerEntity, BinarySensorEntity):
+class DebtAlert(SleepBankEntity, BinarySensorEntity):
     """Schlägt an, wenn das chronische Defizit die Schwelle überschreitet."""
 
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
 
-    def __init__(self, coordinator: SleepLedgerCoordinator) -> None:
+    def __init__(self, coordinator: SleepBankCoordinator) -> None:
         """Warnsensor aufsetzen."""
         super().__init__(coordinator, KEY_DEBT_ALERT)
 
@@ -60,7 +60,7 @@ class DebtAlert(SleepLedgerEntity, BinarySensorEntity):
         }
 
 
-class LowConfidence(SleepLedgerEntity, BinarySensorEntity):
+class LowConfidence(SleepBankEntity, BinarySensorEntity):
     """Meldet, wenn die Datenbasis zu dünn für die Langzeitmetriken ist.
 
     Bewusst eine eigene Entität statt nur eines Attributs: Wer Automationen auf
@@ -70,7 +70,7 @@ class LowConfidence(SleepLedgerEntity, BinarySensorEntity):
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
-    def __init__(self, coordinator: SleepLedgerCoordinator) -> None:
+    def __init__(self, coordinator: SleepBankCoordinator) -> None:
         """Diagnosesensor aufsetzen."""
         super().__init__(coordinator, KEY_LOW_CONFIDENCE)
 

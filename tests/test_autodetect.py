@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.sleep_ledger.config_flow import autodetect
-from custom_components.sleep_ledger.const import (
+from custom_components.sleep_bank.config_flow import autodetect
+from custom_components.sleep_bank.const import (
     CONF_FOCUS,
     CONF_RESTING_HR,
     CONF_SLEEP_DURATION,

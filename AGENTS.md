@@ -1,4 +1,4 @@
-# Sleep Ledger — Arbeitsanweisungen
+# Sleep Bank — Arbeitsanweisungen
 
 Home-Assistant-Custom-Integration, die aus Schlafdaten ein Langzeitkonto führt.
 Wissenschaftlicher Hintergrund und Nutzersicht stehen im README; hier stehen die
@@ -7,7 +7,7 @@ Regeln für die Arbeit am Code.
 ## Architektur
 
 ```
-custom_components/sleep_ledger/
+custom_components/sleep_bank/
   models.py      SleepNight, Provenance          ← rein
   debt.py        Schlafkonto                     ← rein
   regularity.py  SRI, Schlafmitte, Social Jetlag ← rein
@@ -33,7 +33,7 @@ mindestens einmal Geld oder Vertrauen gekostet hätte.
    `SleepNight`-Listen und geben Zahlen zurück.
 
    Geprüft wird das **statisch** in `tests/test_architecture.py`, nicht durch
-   einen Importversuch: `sleep_ledger/__init__.py` ist der Einstiegspunkt von
+   einen Importversuch: `sleep_bank/__init__.py` ist der Einstiegspunkt von
    Home Assistant und zieht HA beim Paketimport zwangsläufig mit herein. Der Test
    schlägt auch an, wenn ein *neues* HA-freies Modul entsteht, das nicht in der
    Liste steht — damit die Trennung bewusst gezogen bleibt.
@@ -85,7 +85,7 @@ mindestens einmal Geld oder Vertrauen gekostet hätte.
 
 Quelle ist die gestaltete Vorlage `artwork/icon-source.png`. `artwork/make_brand_assets.py`
 leitet daraus alle von Home Assistant geforderten Fassungen ab. Die erzeugten
-Dateien in `custom_components/sleep_ledger/brand/` nie von Hand nachbearbeiten — wer die
+Dateien in `custom_components/sleep_bank/brand/` nie von Hand nachbearbeiten — wer die
 Gestaltung ändern will, tauscht die Vorlage aus und lässt das Skript neu laufen.
 
 ```bash

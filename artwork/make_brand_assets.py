@@ -6,7 +6,7 @@ Aufruf (Pillow und NumPy werden nur hier gebraucht, nicht von der Integration):
 
 Quelle ist `artwork/icon-source.png`, die gestaltete Vorlage. Dieses Skript leitet
 daraus alle von Home Assistant geforderten Fassungen ab und legt sie in
-`custom_components/sleep_ledger/brand/` ab — genau dort sucht die
+`custom_components/sleep_bank/brand/` ab — genau dort sucht die
 HACS-Prüfung sie. Die Vorlage selbst wird nie verändert; wer die Gestaltung
 ändern will, tauscht sie aus und lässt das Skript neu laufen.
 
@@ -37,7 +37,7 @@ SOURCE = ARTWORK_DIR / "icon-source.png"
 #: Die HACS-Prüfung sucht die Bildmarke ausdrücklich unter
 #: `custom_components/<domain>/brand/icon.png` und fällt sonst auf die zentrale
 #: Home-Assistant-Markendatenbank zurück, in der die Integration nicht steht.
-OUTPUT_DIR = ARTWORK_DIR.parent / "custom_components" / "sleep_ledger" / "brand"
+OUTPUT_DIR = ARTWORK_DIR.parent / "custom_components" / "sleep_bank" / "brand"
 
 #: Ab diesem Helligkeitswert gilt ein Pixel als Teil des weißen Untergrunds.
 WHITE_THRESHOLD = 235
@@ -186,7 +186,7 @@ def render_logo(
 
     gap = round(height * 0.20)
     probe = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-    box = probe.textbbox((0, 0), "Sleep Ledger", font=font)
+    box = probe.textbbox((0, 0), "Sleep Bank", font=font)
     text_width, text_height = box[2] - box[0], box[3] - box[1]
 
     colour = WORDMARK_DARK_BG if for_dark_background else WORDMARK_LIGHT_BG
@@ -194,7 +194,7 @@ def render_logo(
     logo.paste(icon, (0, 0), icon)
     ImageDraw.Draw(logo).text(
         (height + gap - box[0], (height - text_height) / 2 - box[1]),
-        "Sleep Ledger",
+        "Sleep Bank",
         font=font,
         fill=(*colour, 255),
     )

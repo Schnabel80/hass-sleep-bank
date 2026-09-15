@@ -10,9 +10,9 @@ import pytest
 from conftest import BASE_CONFIG, SLEEP_ENTITY, STEPS_ENTITY
 from homeassistant.util import dt as dt_util
 
-from custom_components.sleep_ledger import ingest
-from custom_components.sleep_ledger.const import CONF_ONSET_TIME, CONF_WAKE_TIME
-from custom_components.sleep_ledger.models import Provenance
+from custom_components.sleep_bank import ingest
+from custom_components.sleep_bank.const import CONF_ONSET_TIME, CONF_WAKE_TIME
+from custom_components.sleep_bank.models import Provenance
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -135,7 +135,7 @@ async def test_seeding_nutzt_das_tagesmaximum(
     hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Für einen einmal je Nacht gesetzten Sensor ist das Maximum der Nachtwert."""
-    from custom_components.sleep_ledger import ingest as module
+    from custom_components.sleep_bank import ingest as module
 
     base = datetime(2026, 9, 10, 0, 0, tzinfo=BERLIN)
     rows = {

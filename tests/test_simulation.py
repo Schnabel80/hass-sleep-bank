@@ -16,7 +16,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "simulator"))
 
-from sleep_ledger import debt, physiology, regularity
+from sleep_bank import debt, physiology, regularity
 from sleepers import generate
 
 DAYS = 90

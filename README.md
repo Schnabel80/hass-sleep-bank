@@ -1,4 +1,12 @@
-# Sleep Ledger
+<picture>
+  <source
+    media="(prefers-color-scheme: dark)"
+    srcset="custom_components/sleep_ledger/brand/dark_logo.png">
+  <img
+    src="custom_components/sleep_ledger/brand/logo.png"
+    alt="Sleep Ledger"
+    width="294">
+</picture>
 
 Eine Home-Assistant-Integration, die aus täglichen Schlafdaten ein **Langzeitkonto**
 führt — statt nur die letzte Nacht zu bewerten.

@@ -149,6 +149,19 @@ async def async_numeric_history(
     return values
 
 
+#: Stunde, aus der beim Kaltstart der Nachtwert gelesen wird (lokale Zeit).
+#:
+#: **Nicht** das Tagesmaximum: Der Quellsensor trägt bis zum morgendlichen Sync
+#: noch den Wert der *vorigen* Nacht. Das Tagesmaximum ist deshalb das Maximum
+#: zweier aufeinanderfolgender Nächte und überschätzt den Schlaf systematisch —
+#: mit einem zu kleinen Defizit als Folge. Um 10 Uhr steht dagegen zuverlässig
+#: der Wert der vergangenen Nacht.
+SEED_SAMPLE_HOUR = 10
+
+#: Stunden, aus denen ersatzweise gelesen wird, wenn die Zielstunde fehlt.
+SEED_FALLBACK_HOURS = (11, 9, 12, 8)
+
+
 def is_night_arrival(moment: datetime) -> bool:
     """Ob ein Datenzugang im Morgenfenster liegt — sonst ist es ein Nickerchen."""
     return MORNING_START_HOUR <= moment.hour < MORNING_END_HOUR
@@ -227,17 +240,21 @@ async def async_seed_from_statistics(
 ) -> list[SleepNight]:
     """Nächte aus der Langzeitstatistik rekonstruieren (Kaltstart).
 
-    Für einen Sensor, der je Nacht genau einmal gesetzt wird, ist das Tagesmaximum
-    eine brauchbare Näherung des Nachtwerts — der Mittelwert wäre es nicht, weil
-    er den Wert über den Tag verwässert. Die so gewonnenen Nächte tragen
-    :attr:`Provenance.SEEDED` und damit keine Uhrzeit-Metriken.
+    Gelesen wird der Stundenmittelwert einer festen Vormittagsstunde, nicht das
+    Tagesmaximum: Bis zum morgendlichen Sync trägt der Sensor noch den Wert der
+    vorigen Nacht, sodass das Tagesmaximum das Maximum zweier Nächte wäre.
+
+    Der **heutige** Tag wird ausgelassen. Er gehört der regulären Erfassung, die
+    ihn mit echtem Anker und echter Konfidenz aufnimmt; ein geseedeter Eintrag
+    würde ihr zuvorkommen und dauerhaft an ihrer Stelle stehen bleiben.
+
+    Die so gewonnenen Nächte tragen :attr:`Provenance.SEEDED` und damit keine
+    Uhrzeit-Metriken.
     """
     end = dt_util.now()
     start = end - timedelta(days=days)
-    # Das Tagesmaximum ist für einen einmal je Nacht gesetzten Sensor die
-    # richtige Aggregation; der Mittelwert würde den Wert über den Tag verwässern.
     statistic_types: set[Literal["change", "last_reset", "max", "mean", "min", "state", "sum"]] = {
-        "max"
+        "mean"
     }
     call = partial(
         statistics.statistics_during_period,
@@ -245,7 +262,7 @@ async def async_seed_from_statistics(
         start,
         end,
         {entity_id},
-        "day",
+        "hour",
         None,
         statistic_types,
     )
@@ -255,19 +272,31 @@ async def async_seed_from_statistics(
         _LOGGER.warning("Kaltstart-Seeding aus der Statistik fehlgeschlagen: %s", err)
         return []
 
-    seeded: list[SleepNight] = []
+    # Je Kalendertag die Stundenwerte des Vormittags sammeln.
+    by_day: dict[date, dict[int, float]] = {}
     for row in rows.get(entity_id, []):
-        value = row.get("max")
+        value = row.get("mean")
         if value is None:
             continue
         moment = dt_util.as_local(dt_util.utc_from_timestamp(row["start"]))
-        seeded.append(
-            SleepNight(
-                date=moment.date(),
-                total_min=float(value),
-                anchor_provenance=Provenance.SEEDED,
-                confidence=0.3,
-            )
-        )
+        by_day.setdefault(moment.date(), {})[moment.hour] = float(value)
+
+    today = end.date()
+    seeded: list[SleepNight] = []
+    for day, hours in sorted(by_day.items()):
+        if day >= today:
+            continue
+        for hour in (SEED_SAMPLE_HOUR, *SEED_FALLBACK_HOURS):
+            if (value := hours.get(hour)) is not None and value > 0:
+                seeded.append(
+                    SleepNight(
+                        date=day,
+                        total_min=round(value, 1),
+                        anchor_provenance=Provenance.SEEDED,
+                        confidence=0.3,
+                    )
+                )
+                break
+
     _LOGGER.debug("%d Nächte aus der Langzeitstatistik rekonstruiert", len(seeded))
     return seeded

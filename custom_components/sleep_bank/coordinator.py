@@ -38,6 +38,7 @@ from .const import (
     DEFAULT_DEBT_ALERT_THRESHOLD_MIN,
     DEFAULT_FREE_DAYS,
     DOMAIN,
+    MIN_COVERAGE,
     RECOVERY_SCENARIOS,
     STORAGE_META_CALIBRATION_END,
     STORAGE_META_CALIBRATION_START,
@@ -397,6 +398,8 @@ class SleepBankCoordinator(DataUpdateCoordinator[SleepBankData]):
         )
         regularity_result = regularity_model.compute(nights, today=today, free_days=self.free_days)
         physiology_result = physiology_model.compute(nights, today=today)
+        data_coverage = coverage(nights, COVERAGE_WINDOW_DAYS, today)
+
         readiness_result = readiness_model.compute(
             acute_debt_min=debt_result.acute_min,
             recovery_z=physiology_result.recovery_z,
@@ -411,6 +414,12 @@ class SleepBankCoordinator(DataUpdateCoordinator[SleepBankData]):
                 ),
             },
         )
+        if data_coverage < MIN_COVERAGE:
+            # Der Bereitschaftsindex fasst Fensterkennzahlen zusammen. Trägt das
+            # Fenster nicht, darf auch die Zusammenfassung keine Zahl zeigen —
+            # sonst stünde dort eine selbstbewusste 100, während der
+            # Datenlage-Warnsensor gleichzeitig anschlägt.
+            readiness_result = readiness_model.ReadinessResult(score=None)
 
         # Bedarfsunabhängige Veränderung: derselbe Rechenweg vier Wochen zuvor.
         past = today - timedelta(days=TREND_WINDOW_DAYS)
@@ -436,7 +445,7 @@ class SleepBankCoordinator(DataUpdateCoordinator[SleepBankData]):
             regularity=regularity_result,
             physiology=physiology_result,
             readiness=readiness_result,
-            coverage=coverage(nights, COVERAGE_WINDOW_DAYS, today),
+            coverage=data_coverage,
             nights_to_recovery=scenarios,
             last_night=nights[-1] if nights else None,
             need_min=need,

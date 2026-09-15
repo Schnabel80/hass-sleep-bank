@@ -416,3 +416,45 @@ async def test_vor_dem_morgenfenster_wird_nichts_nachgeholt(
     freezer.move_to(datetime(2026, 9, 14, 1, 0, tzinfo=BERLIN))
     await _setup(hass, config_entry)
     assert config_entry.runtime_data.store.get(date(2026, 9, 14)) is None
+
+
+async def test_bereitschaft_schweigt_bei_duenner_datenlage(
+    hass: HomeAssistant, source_states, config_entry, freezer
+) -> None:
+    """Regression: Drei Nächte ergaben eine selbstbewusste Bereitschaft von 100.
+
+    Der Index fasst Fensterkennzahlen zusammen. Trägt das Fenster nicht, darf
+    auch die Zusammenfassung keine Zahl zeigen — sonst stünde dort eine 100,
+    während der Datenlage-Warnsensor gleichzeitig anschlägt.
+    """
+    freezer.move_to(datetime(2026, 9, 15, 13, 0, tzinfo=BERLIN))
+    await _setup(hass, config_entry)
+    coordinator = config_entry.runtime_data
+
+    await coordinator.store.async_put_many(
+        [SleepNight(date=date(2026, 9, 13) + timedelta(days=i), total_min=480.0) for i in range(3)]
+    )
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert coordinator.data.coverage < 0.6
+    assert coordinator.data.readiness.score is None
+    assert hass.states.get("sensor.sleep_bank_readiness").state == "unknown"
+    assert hass.states.get("binary_sensor.sleep_bank_insufficient_data").state == "on"
+
+
+async def test_bereitschaft_erscheint_bei_tragfaehiger_datenlage(
+    hass: HomeAssistant, source_states, config_entry, freezer
+) -> None:
+    freezer.move_to(datetime(2026, 9, 15, 13, 0, tzinfo=BERLIN))
+    await _setup(hass, config_entry)
+    coordinator = config_entry.runtime_data
+
+    await coordinator.store.async_put_many(
+        [SleepNight(date=date(2026, 9, 2) + timedelta(days=i), total_min=480.0) for i in range(14)]
+    )
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert coordinator.data.coverage >= 0.6
+    assert coordinator.data.readiness.score is not None

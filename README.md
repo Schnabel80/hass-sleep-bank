@@ -332,9 +332,17 @@ automation:
 ## Fehlersuche
 
 **Alle Langzeitwerte sind `unknown`.** Normal am Anfang — das Modell braucht
-14 erfasste Nächte. `sensor.*_data_coverage` zeigt den Fortschritt. Beim ersten
-Start werden Nächte aus der Langzeitstatistik des Quellsensors rekonstruiert
-(Tagesmaximum), sofern vorhanden; diese tragen eine reduzierte Konfidenz.
+14 erfasste Nächte. `sensor.*_data_coverage` zeigt den Fortschritt. Auch der
+Bereitschaftsindex bleibt leer, solange die Abdeckung unter 60 % liegt: Er fasst
+Fensterkennzahlen zusammen und darf keine Zahl zeigen, wenn das Fenster nicht
+trägt.
+
+Beim ersten Start werden Nächte aus der Langzeitstatistik des Quellsensors
+rekonstruiert, sofern vorhanden; diese tragen eine reduzierte Konfidenz. Gelesen
+wird dabei ein fester Vormittagswert und **nicht** das Tagesmaximum: Bis zum
+morgendlichen Sync trägt der Sensor noch den Wert der vorigen Nacht, das
+Tagesmaximum wäre also das Maximum zweier Nächte. Der heutige Tag wird
+ausgelassen — er gehört der regulären Erfassung mit echtem Anker.
 
 **Der geschätzte Bedarf bleibt leer.** Sieh dir das Attribut `reason` an.
 `all_nights_alarm_constrained` heißt: Jede Nacht endet am Wecker, es gibt nichts

@@ -131,19 +131,38 @@ async def test_nickerchen_fenster(hass: HomeAssistant) -> None:
     assert not ingest.is_night_arrival(datetime(2026, 9, 14, 1, 0, tzinfo=BERLIN))
 
 
-async def test_seeding_nutzt_das_tagesmaximum(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+async def test_seeding_liest_den_vormittagswert_nicht_das_tagesmaximum(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch, freezer
 ) -> None:
-    """Für einen einmal je Nacht gesetzten Sensor ist das Maximum der Nachtwert."""
+    """Regression: Das Tagesmaximum ist das Maximum *zweier* Nächte.
+
+    Bis zum morgendlichen Sync trägt der Quellsensor noch den Wert der vorigen
+    Nacht. Ein Tag, an dem bis 06:09 Uhr 536 min standen und danach 395 min,
+    hat als Tagesmaximum 536 — also den Wert der Vornacht. Das überschätzt den
+    Schlaf und beschönigt damit das Defizit. Gelesen wird deshalb ein fester
+    Vormittagswert.
+    """
     from custom_components.sleep_bank import ingest as module
 
-    base = datetime(2026, 9, 10, 0, 0, tzinfo=BERLIN)
+    freezer.move_to(datetime(2026, 9, 15, 14, 0, tzinfo=BERLIN))
+    await hass.config.async_set_time_zone("Europe/Berlin")
+
+    def stunde(tag: int, hour: int, wert: float) -> dict:
+        moment = datetime(2026, 9, tag, hour, 0, tzinfo=BERLIN)
+        return {"start": moment.timestamp(), "mean": wert}
+
     rows = {
         SLEEP_ENTITY: [
-            {"start": (base + timedelta(days=offset)).timestamp(), "max": 400.0 + offset}
-            for offset in range(3)
+            # 13.09.: durchgehend 536
+            stunde(13, 3, 536.0),
+            stunde(13, 10, 536.0),
+            # 14.09.: früh noch die Vornacht, ab dem Sync der echte Wert
+            stunde(14, 3, 536.0),
+            stunde(14, 5, 536.0),
+            stunde(14, 10, 395.0),
+            # 15.09. ist *heute* und gehört der regulären Erfassung
+            stunde(15, 10, 452.0),
         ]
-        + [{"start": (base + timedelta(days=3)).timestamp(), "max": None}]
     }
 
     class _Recorder:
@@ -156,6 +175,37 @@ async def test_seeding_nutzt_das_tagesmaximum(
 
     seeded = await module.async_seed_from_statistics(hass, SLEEP_ENTITY, days=30)
 
-    assert [n.total_min for n in seeded] == [400.0, 401.0, 402.0]
+    assert [(n.date.day, n.total_min) for n in seeded] == [(13, 536.0), (14, 395.0)]
     assert all(n.anchor_provenance is Provenance.SEEDED for n in seeded)
     assert not any(n.has_timing for n in seeded), "Schätzungen tragen keine Uhrzeitmetriken"
+
+
+async def test_seeding_laesst_den_heutigen_tag_aus(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch, freezer
+) -> None:
+    """Regression: Ein geseedeter Eintrag für heute blockierte die echte Erfassung.
+
+    Die reguläre Erfassung überschreibt eine bestehende Nacht nur, wenn sie
+    besser ist — eine Schätzung für den heutigen Tag stand ihr damit dauerhaft im
+    Weg, und die Nacht blieb bei Konfidenz 0,3 ohne Anker stehen.
+    """
+    from custom_components.sleep_bank import ingest as module
+
+    freezer.move_to(datetime(2026, 9, 15, 14, 0, tzinfo=BERLIN))
+    await hass.config.async_set_time_zone("Europe/Berlin")
+
+    rows = {
+        SLEEP_ENTITY: [
+            {"start": datetime(2026, 9, 15, 10, 0, tzinfo=BERLIN).timestamp(), "mean": 452.0}
+        ]
+    }
+
+    class _Recorder:
+        @staticmethod
+        async def async_add_executor_job(call):
+            return call()
+
+    monkeypatch.setattr(module.statistics, "statistics_during_period", lambda *a, **k: rows)
+    monkeypatch.setattr(module, "get_instance", lambda _hass: _Recorder())
+
+    assert await module.async_seed_from_statistics(hass, SLEEP_ENTITY, days=30) == []

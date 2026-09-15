@@ -1,0 +1,171 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Source entities",
+        "description": "Pick the entities that carry your sleep data. Only the sleep duration is required — every other field adds a metric. Matching Companion App sensors are pre-selected where found.",
+        "data": {
+          "sleep_duration_entity": "Sleep duration",
+          "core_sleep_entity": "Core sleep",
+          "deep_sleep_entity": "Deep sleep",
+          "rem_sleep_entity": "REM sleep",
+          "awake_entity": "Awake during the night",
+          "resting_hr_entity": "Resting heart rate",
+          "hrv_entity": "Heart rate variability",
+          "respiratory_rate_entity": "Respiratory rate"
+        }
+      },
+      "timing": {
+        "title": "Sleep timing",
+        "description": "Regularity and social jetlag need bed and wake times. If you have real timestamps, use them. Otherwise a focus sensor and a step counter are used to anchor your wake-up, and the time you fell asleep is calculated back from the measured sleep duration. Without any of these, the timing metrics stay unknown rather than guessed.",
+        "data": {
+          "wake_time_entity": "Wake time (if measured)",
+          "onset_time_entity": "Sleep onset (if measured)",
+          "focus_entity": "Sleep focus / do not disturb",
+          "steps_entity": "Step counter"
+        }
+      },
+      "personal": {
+        "title": "Your sleep need",
+        "description": "Individual sleep need varies roughly between 6 and 9 hours. The default of 8 hours is a population average — adjust it, or let it be estimated from your undisturbed nights on free days.",
+        "data": {
+          "sleep_need_min": "Sleep need",
+          "auto_sleep_need": "Estimate sleep need automatically",
+          "free_days": "Free days"
+        }
+      }
+    },
+    "error": {
+      "no_numeric_state": "This entity has no numeric state right now. Pick a sensor that reports sleep duration as a number."
+    },
+    "abort": {
+      "already_configured": "This sleep duration entity is already being tracked."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sleep Ledger",
+        "menu_options": {
+          "sources": "Source entities",
+          "timing": "Sleep timing",
+          "model": "Model parameters"
+        }
+      },
+      "sources": {
+        "title": "Source entities",
+        "data": {
+          "sleep_duration_entity": "Sleep duration",
+          "core_sleep_entity": "Core sleep",
+          "deep_sleep_entity": "Deep sleep",
+          "rem_sleep_entity": "REM sleep",
+          "awake_entity": "Awake during the night",
+          "resting_hr_entity": "Resting heart rate",
+          "hrv_entity": "Heart rate variability",
+          "respiratory_rate_entity": "Respiratory rate"
+        }
+      },
+      "timing": {
+        "title": "Sleep timing",
+        "data": {
+          "wake_time_entity": "Wake time (if measured)",
+          "onset_time_entity": "Sleep onset (if measured)",
+          "focus_entity": "Sleep focus / do not disturb",
+          "steps_entity": "Step counter"
+        }
+      },
+      "model": {
+        "title": "Model parameters",
+        "description": "Only change these if you know what they do. The defaults reproduce the recovery dynamics reported in sleep restriction studies.",
+        "data": {
+          "tau_acute": "Acute time constant (nights)",
+          "tau_chronic": "Chronic time constant (nights)",
+          "recovery_efficiency": "Recovery efficiency",
+          "credit_cap_min": "Sleep banking cap",
+          "debt_alert_threshold_min": "Debt warning threshold",
+          "weight_debt": "Readiness weight: sleep debt",
+          "weight_physiology": "Readiness weight: physiology",
+          "weight_regularity": "Readiness weight: regularity"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "debt_acute": {
+        "name": "Acute sleep debt"
+      },
+      "debt_chronic": {
+        "name": "Chronic deficit per night"
+      },
+      "nights_to_recovery": {
+        "name": "Nights to recovery"
+      },
+      "regularity_index": {
+        "name": "Sleep regularity index"
+      },
+      "social_jetlag": {
+        "name": "Social jetlag"
+      },
+      "sleep_midpoint": {
+        "name": "Sleep midpoint"
+      },
+      "midpoint_variability": {
+        "name": "Midpoint variability"
+      },
+      "recovery_score": {
+        "name": "Physiological recovery"
+      },
+      "readiness": {
+        "name": "Readiness"
+      },
+      "data_coverage": {
+        "name": "Data coverage"
+      },
+      "last_night_confidence": {
+        "name": "Last night confidence"
+      },
+      "last_night_duration": {
+        "name": "Last night duration"
+      },
+      "estimated_sleep_need": {
+        "name": "Estimated sleep need"
+      }
+    },
+    "binary_sensor": {
+      "debt_alert": {
+        "name": "Sleep debt warning"
+      },
+      "low_confidence": {
+        "name": "Insufficient data"
+      }
+    },
+    "number": {
+      "sleep_need_min": {
+        "name": "Sleep need"
+      },
+      "debt_alert_threshold_min": {
+        "name": "Debt warning threshold"
+      },
+      "weight_debt": {
+        "name": "Readiness weight: sleep debt"
+      },
+      "weight_physiology": {
+        "name": "Readiness weight: physiology"
+      },
+      "weight_regularity": {
+        "name": "Readiness weight: regularity"
+      }
+    },
+    "button": {
+      "recalculate": {
+        "name": "Recalculate"
+      }
+    },
+    "switch": {
+      "calibration": {
+        "name": "Sleep need calibration"
+      }
+    }
+  }
+}

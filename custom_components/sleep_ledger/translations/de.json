@@ -1,0 +1,171 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Quellentitäten",
+        "description": "Wähle die Entitäten mit deinen Schlafdaten. Zwingend ist nur die Schlafdauer — jedes weitere Feld schaltet eine Kennzahl frei. Passende Sensoren der Companion-App sind vorausgewählt, sofern gefunden.",
+        "data": {
+          "sleep_duration_entity": "Schlafdauer",
+          "core_sleep_entity": "Leichtschlaf (Core)",
+          "deep_sleep_entity": "Tiefschlaf",
+          "rem_sleep_entity": "REM-Schlaf",
+          "awake_entity": "Wachzeit in der Nacht",
+          "resting_hr_entity": "Ruhepuls",
+          "hrv_entity": "Herzratenvariabilität",
+          "respiratory_rate_entity": "Atemfrequenz"
+        }
+      },
+      "timing": {
+        "title": "Zeiterfassung",
+        "description": "Regularität und Social Jetlag brauchen Einschlaf- und Aufwachzeit. Liegen echte Zeitstempel vor, werden sie bevorzugt. Sonst dienen Fokus-Sensor und Schrittzähler dem Aufwach-Anker, und die Einschlafzeit wird aus der gemessenen Schlafdauer zurückgerechnet. Fehlt beides, bleiben die Zeitmetriken unbekannt statt geraten.",
+        "data": {
+          "wake_time_entity": "Aufwachzeit (falls gemessen)",
+          "onset_time_entity": "Einschlafzeit (falls gemessen)",
+          "focus_entity": "Schlaf-Fokus / Nicht stören",
+          "steps_entity": "Schrittzähler"
+        }
+      },
+      "personal": {
+        "title": "Dein Schlafbedarf",
+        "description": "Der individuelle Schlafbedarf schwankt etwa zwischen 6 und 9 Stunden. Die Vorgabe von 8 Stunden ist ein Populationsmittel — passe sie an, oder lass sie aus deinen ungestörten Nächten an freien Tagen schätzen.",
+        "data": {
+          "sleep_need_min": "Schlafbedarf",
+          "auto_sleep_need": "Schlafbedarf automatisch schätzen",
+          "free_days": "Freie Tage"
+        }
+      }
+    },
+    "error": {
+      "no_numeric_state": "Diese Entität hat derzeit keinen numerischen Zustand. Wähle einen Sensor, der die Schlafdauer als Zahl meldet."
+    },
+    "abort": {
+      "already_configured": "Diese Schlafdauer-Entität wird bereits ausgewertet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sleep Ledger",
+        "menu_options": {
+          "sources": "Quellentitäten",
+          "timing": "Zeiterfassung",
+          "model": "Modellparameter"
+        }
+      },
+      "sources": {
+        "title": "Quellentitäten",
+        "data": {
+          "sleep_duration_entity": "Schlafdauer",
+          "core_sleep_entity": "Leichtschlaf (Core)",
+          "deep_sleep_entity": "Tiefschlaf",
+          "rem_sleep_entity": "REM-Schlaf",
+          "awake_entity": "Wachzeit in der Nacht",
+          "resting_hr_entity": "Ruhepuls",
+          "hrv_entity": "Herzratenvariabilität",
+          "respiratory_rate_entity": "Atemfrequenz"
+        }
+      },
+      "timing": {
+        "title": "Zeiterfassung",
+        "data": {
+          "wake_time_entity": "Aufwachzeit (falls gemessen)",
+          "onset_time_entity": "Einschlafzeit (falls gemessen)",
+          "focus_entity": "Schlaf-Fokus / Nicht stören",
+          "steps_entity": "Schrittzähler"
+        }
+      },
+      "model": {
+        "title": "Modellparameter",
+        "description": "Nur ändern, wenn klar ist, was die Werte tun. Die Vorgaben reproduzieren die Erholungsdynamik aus Studien zur Schlafrestriktion.",
+        "data": {
+          "tau_acute": "Akute Zeitkonstante (Nächte)",
+          "tau_chronic": "Chronische Zeitkonstante (Nächte)",
+          "recovery_efficiency": "Erholungs-Wirkungsgrad",
+          "credit_cap_min": "Guthaben-Deckel",
+          "debt_alert_threshold_min": "Warnschwelle Schlafschuld",
+          "weight_debt": "Gewicht Bereitschaft: Schlafschuld",
+          "weight_physiology": "Gewicht Bereitschaft: Physiologie",
+          "weight_regularity": "Gewicht Bereitschaft: Regularität"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "debt_acute": {
+        "name": "Akute Schlafschuld"
+      },
+      "debt_chronic": {
+        "name": "Chronisches Defizit pro Nacht"
+      },
+      "nights_to_recovery": {
+        "name": "Nächte bis Erholung"
+      },
+      "regularity_index": {
+        "name": "Schlaf-Regularitätsindex"
+      },
+      "social_jetlag": {
+        "name": "Social Jetlag"
+      },
+      "sleep_midpoint": {
+        "name": "Schlafmitte"
+      },
+      "midpoint_variability": {
+        "name": "Streuung der Schlafmitte"
+      },
+      "recovery_score": {
+        "name": "Physiologische Erholung"
+      },
+      "readiness": {
+        "name": "Bereitschaft"
+      },
+      "data_coverage": {
+        "name": "Datenabdeckung"
+      },
+      "last_night_confidence": {
+        "name": "Konfidenz der letzten Nacht"
+      },
+      "last_night_duration": {
+        "name": "Dauer der letzten Nacht"
+      },
+      "estimated_sleep_need": {
+        "name": "Geschätzter Schlafbedarf"
+      }
+    },
+    "binary_sensor": {
+      "debt_alert": {
+        "name": "Warnung Schlafschuld"
+      },
+      "low_confidence": {
+        "name": "Unzureichende Datenlage"
+      }
+    },
+    "number": {
+      "sleep_need_min": {
+        "name": "Schlafbedarf"
+      },
+      "debt_alert_threshold_min": {
+        "name": "Warnschwelle Schlafschuld"
+      },
+      "weight_debt": {
+        "name": "Gewicht Bereitschaft: Schlafschuld"
+      },
+      "weight_physiology": {
+        "name": "Gewicht Bereitschaft: Physiologie"
+      },
+      "weight_regularity": {
+        "name": "Gewicht Bereitschaft: Regularität"
+      }
+    },
+    "button": {
+      "recalculate": {
+        "name": "Neu berechnen"
+      }
+    },
+    "switch": {
+      "calibration": {
+        "name": "Bedarfs-Kalibrierung"
+      }
+    }
+  }
+}

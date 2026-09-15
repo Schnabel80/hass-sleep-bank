@@ -1,0 +1,83 @@
+{
+  "entity": {
+    "sensor": {
+      "debt_acute": {
+        "default": "mdi:sleep"
+      },
+      "debt_chronic": {
+        "default": "mdi:chart-timeline-variant"
+      },
+      "nights_to_recovery": {
+        "default": "mdi:calendar-clock"
+      },
+      "regularity_index": {
+        "default": "mdi:repeat"
+      },
+      "social_jetlag": {
+        "default": "mdi:earth"
+      },
+      "sleep_midpoint": {
+        "default": "mdi:clock-outline"
+      },
+      "midpoint_variability": {
+        "default": "mdi:arrow-expand-horizontal"
+      },
+      "recovery_score": {
+        "default": "mdi:heart-pulse"
+      },
+      "readiness": {
+        "default": "mdi:battery-heart-variant"
+      },
+      "data_coverage": {
+        "default": "mdi:database-check"
+      },
+      "last_night_confidence": {
+        "default": "mdi:shield-check"
+      },
+      "last_night_duration": {
+        "default": "mdi:bed-clock"
+      },
+      "estimated_sleep_need": {
+        "default": "mdi:target"
+      }
+    },
+    "binary_sensor": {
+      "debt_alert": {
+        "default": "mdi:alert-outline",
+        "state": {
+          "on": "mdi:alert"
+        }
+      },
+      "low_confidence": {
+        "default": "mdi:database-alert"
+      }
+    },
+    "number": {
+      "sleep_need_min": {
+        "default": "mdi:target"
+      },
+      "debt_alert_threshold_min": {
+        "default": "mdi:alert-outline"
+      },
+      "weight_debt": {
+        "default": "mdi:scale-balance"
+      },
+      "weight_physiology": {
+        "default": "mdi:scale-balance"
+      },
+      "weight_regularity": {
+        "default": "mdi:scale-balance"
+      }
+    },
+    "button": {
+      "recalculate": {
+        "default": "mdi:calculator-variant"
+      }
+    },
+    "switch": {
+      "calibration": {
+        "default": "mdi:target-variant"
+      }
+    }
+  }
+}

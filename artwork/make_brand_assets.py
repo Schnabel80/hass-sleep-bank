@@ -2,12 +2,13 @@
 
 Aufruf (Pillow und NumPy werden nur hier gebraucht, nicht von der Integration):
 
-    uvx --with pillow --with numpy --with pyoxipng python brand/make_brand_assets.py
+    uvx --with pillow --with numpy --with pyoxipng python artwork/make_brand_assets.py
 
-Quelle ist `brand/icon-source.png`, die gestaltete Vorlage. Dieses Skript leitet
-daraus alle von Home Assistant geforderten Fassungen ab. Die Vorlage selbst wird
-nie verändert — wer die Gestaltung ändern will, tauscht sie aus und lässt das
-Skript neu laufen.
+Quelle ist `artwork/icon-source.png`, die gestaltete Vorlage. Dieses Skript leitet
+daraus alle von Home Assistant geforderten Fassungen ab und legt sie in
+`custom_components/sleep_ledger/brand/` ab — genau dort sucht die
+HACS-Prüfung sie. Die Vorlage selbst wird nie verändert; wer die Gestaltung
+ändern will, tauscht sie aus und lässt das Skript neu laufen.
 
 Warum überhaupt Nachbearbeitung
 -------------------------------
@@ -29,9 +30,14 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-BRAND_DIR = Path(__file__).resolve().parent
-SOURCE = BRAND_DIR / "icon-source.png"
-OUTPUT_DIR = BRAND_DIR.parent / "custom_components" / "sleep_ledger"
+ARTWORK_DIR = Path(__file__).resolve().parent
+SOURCE = ARTWORK_DIR / "icon-source.png"
+
+#: Ablageort der erzeugten Dateien. Der Unterordner `brand` ist verbindlich:
+#: Die HACS-Prüfung sucht die Bildmarke ausdrücklich unter
+#: `custom_components/<domain>/brand/icon.png` und fällt sonst auf die zentrale
+#: Home-Assistant-Markendatenbank zurück, in der die Integration nicht steht.
+OUTPUT_DIR = ARTWORK_DIR.parent / "custom_components" / "sleep_ledger" / "brand"
 
 #: Ab diesem Helligkeitswert gilt ein Pixel als Teil des weißen Untergrunds.
 WHITE_THRESHOLD = 235

@@ -51,7 +51,7 @@ ignore = [
 # Simulator und Bildmarken-Generator sind Entwickler-CLI-Werkzeuge und nicht Teil
 # der Integration: print() ist dort die gewollte Ausgabe.
 "simulator/*.py" = ["T201"]
-"brand/*.py" = ["T201"]
+"artwork/*.py" = ["T201"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 25

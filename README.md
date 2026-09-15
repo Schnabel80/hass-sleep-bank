@@ -338,7 +338,7 @@ deinstallieren.
 
 ## Bildmarke
 
-Icon und Logo liegen in `custom_components/sleep_ledger/` (`icon.png`,
+Icon und Logo liegen in `custom_components/sleep_ledger/brand/` (`icon.png`,
 `icon@2x.png`, `logo.png`, `logo@2x.png`, `dark_logo*.png`) in den von Home
 Assistant geforderten Größen.
 
@@ -346,12 +346,12 @@ Die Gestaltung: eine **Mondsichel** für den Schlaf über einem **Speicher mit
 Füllstand und Ziellinie** — der Füllstand bleibt unter der Marke, also genau das
 Bild eines Schlafkontos im Minus.
 
-Quelle ist `brand/icon-source.png`. `brand/make_brand_assets.py` stellt die weißen
+Quelle ist `artwork/icon-source.png`. `artwork/make_brand_assets.py` stellt die weißen
 Ecken frei, setzt die Motivfarbe über die Kante hinaus fort (sonst entsteht beim
 Verkleinern ein heller Saum) und schreibt alle Ausgabeformate:
 
 ```bash
-uvx --with pillow --with numpy --with pyoxipng python brand/make_brand_assets.py
+uvx --with pillow --with numpy --with pyoxipng python artwork/make_brand_assets.py
 ```
 
 ## Entwicklung

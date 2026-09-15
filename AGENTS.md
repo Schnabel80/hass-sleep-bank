@@ -83,13 +83,13 @@ mindestens einmal Geld oder Vertrauen gekostet hätte.
 
 ## Bildmarke
 
-Quelle ist die gestaltete Vorlage `brand/icon-source.png`. `brand/make_brand_assets.py`
+Quelle ist die gestaltete Vorlage `artwork/icon-source.png`. `artwork/make_brand_assets.py`
 leitet daraus alle von Home Assistant geforderten Fassungen ab. Die erzeugten
-Dateien in `custom_components/sleep_ledger/` nie von Hand nachbearbeiten — wer die
+Dateien in `custom_components/sleep_ledger/brand/` nie von Hand nachbearbeiten — wer die
 Gestaltung ändern will, tauscht die Vorlage aus und lässt das Skript neu laufen.
 
 ```bash
-uvx --with pillow --with numpy --with pyoxipng python brand/make_brand_assets.py
+uvx --with pillow --with numpy --with pyoxipng python artwork/make_brand_assets.py
 ```
 
 Drei Dinge, die das Skript erledigt und die man nicht weglassen darf:

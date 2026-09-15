@@ -11,4 +11,4 @@ simulator/out/
 .coverage
 coverage.xml
 htmlcov/
-brand/__pycache__/
+artwork/__pycache__/
